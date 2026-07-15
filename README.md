@@ -1,66 +1,72 @@
 # Clinic Patient Tracker
 
-Aplicación full stack para administrar pacientes en espera de atención en una clínica.
+Aplicación web full stack para gestionar pacientes en espera de atención en una clínica.
 
-El sistema permite identificar pacientes prioritarios, consultar información básica, actualizar el estado de atención y visualizar indicadores operativos.
+El sistema permite autenticar usuarios, consultar pacientes, buscar y filtrar registros, crear y actualizar pacientes, modificar su estado o prioridad, eliminar registros y visualizar indicadores operativos.
 
-El proyecto fue desarrollado como un **monolito modular**, con frontend y backend separados dentro de un mismo repositorio. **Por favor, se debe leer y analizar cada README (Frontend y backend) para la correcta instalacion y uso**
+El proyecto utiliza datos completamente sintéticos y fue desarrollado como solución para una prueba técnica de Desarrollador Full Stack Junior.
 
 ---
 
 ## 1. Funcionalidades principales
 
+### Autenticación
+
 * Inicio de sesión con usuario y contraseña.
-* Autenticación mediante JWT.
-* Dashboard de indicadores.
-* Consulta de pacientes.
+* Validación contra usuarios almacenados en SQLite.
+* Contraseñas almacenadas mediante hash Argon2.
+* Autenticación con JWT.
+* Protección de rutas del backend.
+* Protección de rutas del frontend.
+* Recuperación de sesión al recargar la página.
+* Cierre de sesión.
+* Redirección automática cuando el token expira.
+
+### Dashboard
+
+* Total de pacientes registrados.
+* Pacientes pendientes.
+* Pacientes en atención.
+* Pacientes atendidos.
+* Pacientes con prioridad alta.
+* Actualización manual de indicadores.
+* Indicadores calculados directamente desde la base de datos.
+
+### Gestión de pacientes
+
+* Listado paginado.
+* Consulta individual.
 * Búsqueda por nombre o documento.
-* Filtros por estado, prioridad y EPS.
+* Filtro por estado.
+* Filtro por prioridad.
+* Filtro por EPS.
 * Registro de pacientes.
 * Edición de pacientes.
-* Cambio de estado de atención.
+* Cambio de estado.
 * Cambio de prioridad.
 * Eliminación con confirmación.
-* Paginación.
-* Catálogo de EPS.
-* Importación de 1.000 pacientes sintéticos desde un archivo ODS.
-* Documentación automática de la API.
+* Validación de formularios.
+* Mensajes de éxito y error.
+
+### Datos iniciales
+
+* Importación de 1.000 pacientes sintéticos.
+* Importación de 10 EPS.
+* Importación de 2 usuarios de demostración.
+* Importación idempotente para evitar duplicados.
 
 ---
 
-## 2. Historias de usuario cubiertas
-
-### Inicio de sesión
-
-Como usuario del sistema, puedo iniciar sesión para acceder al módulo de seguimiento.
-
-### Consulta y búsqueda
-
-Como personal asistencial, puedo consultar y buscar pacientes para encontrar rápidamente un registro.
-
-### Registro y actualización
-
-Como personal asistencial, puedo registrar y actualizar pacientes para mantener la lista vigente.
-
-### Estado y prioridad
-
-Como personal asistencial, puedo cambiar el estado y la prioridad de un paciente para reflejar su situación actual.
-
-### Indicadores
-
-Como responsable del servicio, puedo consultar indicadores simples sobre el volumen y estado general de la atención.
-
----
-
-## 3. Tecnologías
+## 2. Tecnologías utilizadas
 
 ### Backend
 
-* Python.
+* Python 3.11 o superior.
 * FastAPI.
 * SQLAlchemy 2.
 * SQLite.
 * Pydantic 2.
+* Pydantic Settings.
 * PyJWT.
 * Argon2 mediante `pwdlib`.
 * ODFPy.
@@ -74,53 +80,23 @@ Como responsable del servicio, puedo consultar indicadores simples sobre el volu
 * JavaScript.
 * Fetch API.
 * Context API.
-* CSS.
+* Session Storage.
+* CSS tradicional.
 
 ---
 
-## 4. Estructura general
+## 3. Arquitectura
+
+El proyecto está organizado como un monorepo con frontend y backend separados:
 
 ```text
 clinic-patient-tracker/
 ├── backend/
-│   ├── app/
-│   ├── data/
-│   ├── scripts/
-│   ├── tests/
-│   ├── .env.example
-│   ├── README.md
-│   └── requirements.txt
-│
 ├── frontend/
-│   ├── src/
-│   ├── .env.example
-│   ├── README.md
-│   ├── package.json
-│   └── vite.config.js
-│
-├── .gitignore
 └── README.md
 ```
 
----
-
-## 5. Arquitectura
-
-El repositorio contiene dos aplicaciones:
-
-```text
-Frontend React + Vite
-        ↓
-API REST con JWT
-        ↓
-Backend FastAPI
-        ↓
-SQLAlchemy
-        ↓
-SQLite
-```
-
-El backend está organizado como un monolito modular:
+El backend está desarrollado como un **monolito modular**. Todos los módulos se ejecutan dentro de una única aplicación FastAPI, pero el código está separado por funcionalidad:
 
 ```text
 auth
@@ -130,7 +106,7 @@ patients
 dashboard
 ```
 
-El frontend también está organizado por funcionalidades:
+El frontend también está organizado por funcionalidad:
 
 ```text
 auth
@@ -138,95 +114,85 @@ dashboard
 patients
 ```
 
-No se utilizan microservicios. Todo el backend se ejecuta dentro de una única aplicación FastAPI.
+Flujo general:
+
+```text
+React + Vite
+      ↓
+API REST con JWT
+      ↓
+FastAPI
+      ↓
+SQLAlchemy
+      ↓
+SQLite
+```
 
 ---
 
-## 6. Modelo de datos
-
-### Usuarios
-
-Información utilizada para autenticación:
+## 4. Estructura general
 
 ```text
-id
-username
-full_name
-password_hash
-role
-is_active
-created_at
+clinic-patient-tracker/
+├── backend/
+│   ├── app/
+│   │   ├── core/
+│   │   ├── db/
+│   │   ├── importers/
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   ├── dashboard/
+│   │   │   ├── eps/
+│   │   │   ├── patients/
+│   │   │   └── users/
+│   │   ├── shared/
+│   │   ├── api_router.py
+│   │   └── main.py
+│   ├── data/
+│   │   ├── raw/
+│   │   │   └── datos_sinteticos.ods
+│   │   └── clinic.db
+│   ├── scripts/
+│   ├── .env.example
+│   ├── README.md
+│   └── requirements.txt
+│
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   ├── modules/
+│   │   │   ├── auth/
+│   │   │   ├── dashboard/
+│   │   │   └── patients/
+│   │   ├── shared/
+│   │   ├── styles/
+│   │   └── main.jsx
+│   ├── .env.example
+│   ├── README.md
+│   ├── package.json
+│   └── vite.config.js
+│
+└── README.md
 ```
-
-### EPS
-
-Catálogo de entidades prestadoras de salud:
-
-```text
-id
-code
-name
-is_active
-```
-
-### Pacientes
-
-```text
-id
-document_type
-document_number
-full_name
-birth_date
-gender
-phone
-email
-city
-eps_id
-priority
-status
-created_at
-updated_at
-```
-
-El documento del paciente es único.
-
-La EPS se maneja mediante una llave foránea para evitar duplicar el nombre y código en cada paciente.
 
 ---
 
-## 7. Datos sintéticos
+# Requisitos
 
-El proyecto utiliza el archivo:
-
-```text
-backend/data/raw/datos_sinteticos.ods
-```
-
-El archivo suministrado contiene:
-
-* 1.000 pacientes sintéticos.
-* 10 EPS.
-* Catálogos controlados.
-* Diccionario de datos.
-* 2 usuarios de demostración.
-
-Los datos son ficticios y no deben reemplazarse por información real de pacientes.
-
----
-
-## 8. Requisitos previos
+## 5. Requisitos del sistema
 
 ### Backend
 
 * Python 3.11 o superior.
-* pip.
+* `pip`.
+* Soporte para entornos virtuales de Python.
 
 ### Frontend
 
 * Node.js 20.19 o superior.
 * npm.
 
-Verificar:
+### Verificación
 
 ```bash
 python --version
@@ -234,61 +200,122 @@ node --version
 npm --version
 ```
 
+En algunos sistemas Windows puede ser necesario utilizar:
+
+```bash
+py --version
+```
+
 ---
 
-# Ejecución del proyecto
+## 6. Archivo de datos sintéticos
 
-## 9. Configurar el backend
+El archivo ODS debe estar ubicado en:
 
-Entrar a la carpeta:
+```text
+backend/data/raw/datos_sinteticos.ods
+```
+
+El archivo suministrado originalmente puede llamarse:
+
+```text
+Datos_Sinteticos_Prueba_Full_Stack_Junior_2026(2).ods
+```
+
+Se recomienda renombrarlo a:
+
+```text
+datos_sinteticos.ods
+```
+
+El archivo contiene:
+
+* 1.000 pacientes sintéticos.
+* 10 EPS.
+* Tipos de documento.
+* Géneros.
+* Prioridades.
+* Estados.
+* Diccionario de datos.
+* Usuarios de demostración.
+
+---
+
+# Instalación
+
+## 7. Clonar o descargar el proyecto
+
+Ubicarse en la carpeta del repositorio:
+
+```bash
+cd clinic-patient-tracker
+```
+
+---
+
+## 8. Instalación del backend
+
+Entrar al backend:
 
 ```bash
 cd backend
 ```
 
-Crear entorno virtual:
+### Crear el entorno virtual
+
+Windows:
 
 ```bash
 python -m venv .venv
 ```
 
-Activar en PowerShell:
+Linux o macOS:
+
+```bash
+python3 -m venv .venv
+```
+
+### Activar el entorno virtual
+
+PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-Activar en CMD:
+CMD:
 
 ```cmd
 .venv\Scripts\activate
 ```
 
-Activar en Linux o macOS:
+Linux o macOS:
 
 ```bash
 source .venv/bin/activate
 ```
 
-Instalar dependencias:
+### Instalar dependencias
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Crear `.env`:
+### Crear el archivo de configuración
+
+PowerShell:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-En Linux o macOS:
+Linux o macOS:
 
 ```bash
 cp .env.example .env
 ```
 
-Contenido mínimo:
+Contenido esperado de `backend/.env`:
 
 ```env
 APP_NAME=Clinic Patient Tracker API
@@ -309,35 +336,31 @@ CORS_ORIGINS=["http://localhost:5173"]
 SEED_FILE=data/raw/datos_sinteticos.ods
 ```
 
-Generar una clave JWT:
+### Generar una clave JWT
 
 ```bash
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
-Copiarla en:
+Copiar el resultado en:
 
 ```env
 JWT_SECRET_KEY=CLAVE_GENERADA
 ```
 
+La clave JWT no debe publicarse en el repositorio.
+
 ---
 
-## 10. Importar los datos
+## 9. Importar los datos iniciales
 
-Confirmar que el ODS se encuentre en:
-
-```text
-backend/data/raw/datos_sinteticos.ods
-```
-
-Ejecutar:
+Desde `backend`:
 
 ```bash
 python -m scripts.import_ods
 ```
 
-Primera ejecución esperada:
+Resultado esperado durante la primera ejecución:
 
 ```json
 {
@@ -356,19 +379,74 @@ Primera ejecución esperada:
 }
 ```
 
-La importación es idempotente. Puede ejecutarse nuevamente sin duplicar registros.
+La importación es idempotente. Al ejecutarla nuevamente no debe duplicar información:
+
+```json
+{
+  "eps": {
+    "created": 0,
+    "updated": 0
+  },
+  "users": {
+    "created": 0,
+    "updated": 0
+  },
+  "patients": {
+    "created": 0,
+    "updated": 0
+  }
+}
+```
 
 ---
 
+## 10. Instalación del frontend
+
+Abrir otra terminal y ubicarse en:
+
+```bash
+cd clinic-patient-tracker/frontend
+```
+
+Instalar dependencias:
+
+```bash
+npm install
+```
+
+Crear el archivo `.env`:
+
+PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Linux o macOS:
+
+```bash
+cp .env.example .env
+```
+
+Contenido esperado de `frontend/.env`:
+
+```env
+VITE_API_URL=http://127.0.0.1:8000/api/v1
+```
+
+---
+
+# Ejecución
+
 ## 11. Ejecutar el backend
 
-Desde `backend`:
+Desde `backend`, con el entorno virtual activo:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-API:
+La API estará disponible en:
 
 ```text
 http://127.0.0.1:8000
@@ -386,81 +464,35 @@ ReDoc:
 http://127.0.0.1:8000/redoc
 ```
 
----
+Verificación de salud:
 
-## 12. Configurar el frontend
-
-En una terminal diferente, desde la raíz:
-
-```bash
-cd frontend
-```
-
-Instalar dependencias:
-
-```bash
-npm install
-```
-
-Crear `.env`:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-En Linux o macOS:
-
-```bash
-cp .env.example .env
-```
-
-Contenido:
-
-```env
-VITE_API_URL=http://127.0.0.1:8000/api/v1
+```text
+http://127.0.0.1:8000/api/v1/health
 ```
 
 ---
 
-## 13. Ejecutar el frontend
+## 12. Ejecutar el frontend
+
+Desde `frontend`:
 
 ```bash
 npm run dev
 ```
 
-Abrir:
+La interfaz estará disponible normalmente en:
 
 ```text
 http://localhost:5173
 ```
 
-El backend y el frontend deben mantenerse ejecutándose al mismo tiempo.
+El frontend y el backend deben permanecer ejecutándose al mismo tiempo.
 
 ---
 
-## 14. Credenciales de demostración
+## 13. Ejecución rápida en dos terminales
 
-### Administrador
-
-```text
-Usuario: admin.demo
-Contraseña: Demo2026*
-Rol: ADMIN
-```
-
-### Operador
-
-```text
-Usuario: operador.demo
-Contraseña: Demo2026*
-Rol: OPERADOR
-```
-
----
-
-## 15. Flujo de ejecución completo
-
-### Terminal 1 — Backend
+### Terminal 1: backend
 
 ```powershell
 cd backend
@@ -469,7 +501,7 @@ python -m scripts.import_ods
 uvicorn app.main:app --reload
 ```
 
-### Terminal 2 — Frontend
+### Terminal 2: frontend
 
 ```powershell
 cd frontend
@@ -485,7 +517,33 @@ http://localhost:5173
 
 ---
 
-## 16. Endpoints de la API
+# Credenciales de demostración
+
+## 14. Usuario administrador
+
+```text
+Usuario: admin.demo
+Contraseña: Demo2026*
+Rol: ADMIN
+```
+
+## 15. Usuario operador
+
+```text
+Usuario: operador.demo
+Contraseña: Demo2026*
+Rol: OPERADOR
+```
+
+Las contraseñas se almacenan en SQLite mediante hash Argon2, no como texto plano.
+
+Actualmente ambos usuarios pueden acceder a las funcionalidades del sistema.
+
+---
+
+# API REST
+
+## 16. Endpoints disponibles
 
 ### Sistema
 
@@ -522,6 +580,8 @@ DELETE /api/v1/patients/{patient_id}
 GET /api/v1/dashboard
 ```
 
+Excepto el login y el endpoint de salud, las rutas requieren un token JWT.
+
 ---
 
 ## 17. Parámetros del listado de pacientes
@@ -530,14 +590,14 @@ GET /api/v1/dashboard
 GET /api/v1/patients
 ```
 
-| Parámetro   | Descripción          | Predeterminado |
-| ----------- | -------------------- | -------------: |
-| `page`      | Página solicitada    |            `1` |
-| `page_size` | Registros por página |           `20` |
-| `search`    | Nombre o documento   |          Vacío |
-| `status`    | Estado               |          Vacío |
-| `priority`  | Prioridad            |          Vacío |
-| `eps_id`    | EPS                  |          Vacío |
+| Parámetro   | Descripción          | Valor predeterminado |
+| ----------- | -------------------- | -------------------: |
+| `page`      | Número de página     |                  `1` |
+| `page_size` | Registros por página |                 `20` |
+| `search`    | Nombre o documento   |                Vacío |
+| `status`    | Estado               |                Vacío |
+| `priority`  | Prioridad            |                Vacío |
+| `eps_id`    | Identificador de EPS |                Vacío |
 
 Ejemplo:
 
@@ -547,25 +607,7 @@ Ejemplo:
 
 ---
 
-## 18. Dashboard
-
-El dashboard muestra:
-
-```text
-Pacientes registrados
-Pacientes pendientes
-Pacientes en atención
-Pacientes atendidos
-Pacientes con prioridad alta
-```
-
-Los indicadores se calculan directamente desde la tabla de pacientes.
-
-No existe una tabla separada para almacenar estadísticas.
-
----
-
-## 19. Catálogos controlados
+## 18. Catálogos controlados
 
 ### Tipos de documento
 
@@ -601,93 +643,405 @@ En atención
 Atendido
 ```
 
-Los valores deben conservar espacios y tildes.
+Los valores deben conservar exactamente los espacios y las tildes.
 
 ---
 
-## 20. Validaciones principales
+# Decisiones técnicas
 
-### Pacientes
+## 19. Monolito modular
 
-* Documento obligatorio.
-* Documento único.
-* Fecha de nacimiento no futura.
-* Nombre obligatorio.
-* Teléfono válido.
-* EPS existente.
-* Prioridad controlada.
-* Estado controlado.
-* Correo válido cuando se proporciona.
+Se eligió un monolito modular porque el proyecto tiene un alcance pequeño y un número limitado de historias de usuario.
 
-### Usuarios
+Esta decisión permite:
 
-* Nombre de usuario único.
-* Contraseña almacenada como hash.
-* Solo usuarios activos pueden iniciar sesión.
+* Mantener una sola aplicación backend.
+* Evitar la complejidad de microservicios.
+* Separar responsabilidades por funcionalidad.
+* Facilitar el mantenimiento.
+* Permitir una futura extracción de módulos si el sistema crece.
 
 ---
 
-## 21. Seguridad
+## 20. Separación entre frontend y backend
 
-* Las contraseñas se almacenan mediante Argon2.
-* La API utiliza JWT.
-* La clave JWT se configura desde `.env`.
-* Los endpoints de pacientes, EPS y dashboard están protegidos.
-* El frontend no contiene la clave JWT.
-* El token se envía mediante `Authorization: Bearer`.
-* El token se almacena temporalmente en `sessionStorage`.
-* Los datos suministrados son sintéticos.
+El frontend y el backend están separados dentro del mismo repositorio.
 
----
+Esto permite:
 
-## 22. Códigos de respuesta relevantes
-
-| Código | Significado                    |
-| -----: | ------------------------------ |
-|  `200` | Operación exitosa              |
-|  `201` | Registro creado                |
-|  `204` | Registro eliminado             |
-|  `400` | Regla de negocio incumplida    |
-|  `401` | Credenciales o token inválidos |
-|  `404` | Recurso no encontrado          |
-|  `409` | Conflicto o duplicidad         |
-|  `422` | Datos de entrada inválidos     |
-|  `500` | Error interno                  |
+* Desarrollar cada aplicación de forma independiente.
+* Mantener contratos claros mediante la API REST.
+* Cambiar el frontend sin modificar la lógica del backend.
+* Sustituir el backend o consumirlo desde otros clientes en el futuro.
 
 ---
 
-## 23. Reiniciar la base de datos
+## 21. SQLite
+
+Se eligió SQLite por las siguientes razones:
+
+* Instalación sencilla.
+* No requiere un servidor de base de datos.
+* Es suficiente para 1.000 registros sintéticos.
+* Facilita la ejecución local de la prueba.
+* Permite entregar una solución reproducible rápidamente.
+
+SQLAlchemy permite sustituir SQLite por PostgreSQL u otro motor en una evolución posterior.
+
+---
+
+## 22. SQLAlchemy síncrono
+
+Se utilizaron sesiones síncronas de SQLAlchemy.
+
+Para el volumen actual y el alcance de la prueba, una configuración asíncrona agregaría complejidad sin aportar una mejora significativa.
+
+---
+
+## 23. JWT
+
+Se eligió JWT para la autenticación porque:
+
+* Evita mantener sesiones en memoria en el backend.
+* Es sencillo de integrar con React.
+* Permite proteger los endpoints mediante el encabezado `Authorization`.
+* Incluye una fecha de expiración.
+
+---
+
+## 24. Argon2
+
+Las contraseñas se protegen mediante Argon2 porque es un algoritmo adecuado para hashing de contraseñas.
+
+La contraseña original nunca se almacena en la base de datos.
+
+---
+
+## 25. Session Storage
+
+El token JWT se guarda en `sessionStorage`.
+
+Esta decisión permite:
+
+* Conservar la sesión al recargar la página.
+* Eliminar la sesión al cerrar la pestaña.
+* Evitar una persistencia indefinida en el navegador.
+
+Para un sistema productivo de mayor nivel de seguridad podría evaluarse el uso de cookies `HttpOnly`.
+
+---
+
+## 26. Context API
+
+Se utiliza Context API únicamente para administrar el estado global de autenticación.
+
+No se incorporó Redux porque el estado compartido es reducido y no justifica una dependencia adicional.
+
+---
+
+## 27. Fetch API
+
+Se utiliza la API nativa `fetch`.
+
+No se incorporó Axios porque las operaciones requeridas pueden resolverse mediante un cliente HTTP pequeño y centralizado.
+
+---
+
+## 28. CSS sin librería visual
+
+La interfaz fue implementada con CSS tradicional.
+
+Esto reduce dependencias y permite controlar directamente:
+
+* Diseño.
+* Comportamiento responsive.
+* Formularios.
+* Tablas.
+* Modales.
+* Estados visuales.
+
+---
+
+## 29. Importación idempotente
+
+El importador puede ejecutarse varias veces sin duplicar:
+
+* EPS.
+* Usuarios.
+* Pacientes.
+
+Los pacientes se identifican principalmente por su documento, los usuarios por su nombre de usuario y las EPS por su código.
+
+---
+
+## 30. Dashboard calculado en tiempo real
+
+Los indicadores no se almacenan en una tabla independiente.
+
+Se calculan directamente desde los registros actuales de pacientes para evitar inconsistencias entre los datos y las estadísticas.
+
+---
+
+# Limitaciones conocidas
+
+## 31. SQLite y concurrencia
+
+SQLite es apropiado para ejecución local y cargas pequeñas, pero presenta limitaciones cuando existen muchas escrituras concurrentes.
+
+Para un despliegue productivo con múltiples usuarios simultáneos se recomienda PostgreSQL.
+
+---
+
+## 32. Sin migraciones de base de datos
+
+El proyecto crea las tablas mediante `Base.metadata.create_all()`.
+
+Actualmente no se utiliza Alembic.
+
+Esto significa que los cambios futuros en el esquema no se aplicarán automáticamente sobre bases de datos existentes. En una versión productiva se deben implementar migraciones.
+
+---
+
+## 33. Sin control granular de permisos
+
+Existen los roles:
+
+```text
+ADMIN
+OPERADOR
+```
+
+Sin embargo, actualmente ambos roles tienen acceso a las mismas funcionalidades.
+
+No se han implementado permisos específicos como:
+
+* Solo administradores pueden eliminar.
+* Operadores solo pueden consultar o actualizar.
+* Gestión de usuarios.
+* Asignación dinámica de roles.
+
+---
+
+## 34. Sin administración de usuarios
+
+Los usuarios se importan desde el archivo ODS.
+
+La aplicación no incluye interfaces ni endpoints para:
+
+* Crear usuarios.
+* Editar usuarios.
+* Eliminar usuarios.
+* Cambiar contraseñas.
+* Recuperar contraseñas.
+
+---
+
+## 35. Eliminación física
+
+La eliminación de pacientes es permanente.
+
+No se implementó:
+
+* Eliminación lógica.
+* Papelera.
+* Recuperación de registros.
+* Historial de eliminaciones.
+
+---
+
+## 36. Sin auditoría
+
+El sistema no registra:
+
+* Qué usuario creó un paciente.
+* Qué usuario modificó el estado.
+* Fecha y valor anterior de cada cambio.
+* Qué usuario eliminó un registro.
+* Historial de accesos.
+
+En un sistema clínico real esta funcionalidad sería importante.
+
+---
+
+## 37. Sin historial de estados
+
+Solo se conserva el estado actual del paciente.
+
+No existe una tabla que registre transiciones como:
+
+```text
+Pendiente → En atención → Atendido
+```
+
+Tampoco se registra cuánto tiempo permaneció el paciente en cada estado.
+
+---
+
+## 38. Seguridad del token en el navegador
+
+El token se almacena en `sessionStorage`, lo que simplifica la prueba, pero puede ser accesible desde JavaScript si existiera una vulnerabilidad XSS.
+
+Para un entorno productivo se recomienda evaluar cookies seguras con:
+
+```text
+HttpOnly
+Secure
+SameSite
+```
+
+---
+
+## 39. Sin renovación de token
+
+El sistema genera un único token de acceso con duración limitada.
+
+No se implementaron:
+
+* Refresh tokens.
+* Renovación silenciosa.
+* Revocación de tokens.
+* Lista de tokens invalidados.
+
+Cuando el token expira, el usuario debe iniciar sesión nuevamente.
+
+---
+
+## 40. Validaciones limitadas al alcance
+
+Las validaciones cubren las reglas principales de la prueba, pero no incluyen verificaciones avanzadas como:
+
+* Validez real del documento colombiano.
+* Validación real del número telefónico.
+* Confirmación del correo.
+* Homologación de ciudades.
+* Verificación externa de EPS.
+* Detección avanzada de pacientes duplicados.
+
+---
+
+## 41. Búsqueda sencilla
+
+La búsqueda se realiza por coincidencia parcial en:
+
+* Nombre.
+* Documento.
+
+No se implementó:
+
+* Búsqueda difusa.
+* Corrección de errores tipográficos.
+* Búsqueda sin sensibilidad a tildes en todos los motores.
+* Motor de búsqueda especializado.
+* Ordenamiento configurable desde el frontend.
+
+---
+
+## 42. Paginación por desplazamiento
+
+La API utiliza paginación mediante `offset` y `limit`.
+
+Es adecuada para 1.000 registros, pero puede perder eficiencia con millones de filas. Para conjuntos de datos grandes se recomienda paginación basada en cursor.
+
+---
+
+## 43. Sin actualización automática del dashboard
+
+El dashboard se actualiza:
+
+* Al ingresar a la página.
+* Al presionar el botón de actualización.
+* Al recargar la interfaz.
+
+No se implementaron:
+
+* WebSockets.
+* Server-Sent Events.
+* Actualización periódica automática.
+* Sincronización en tiempo real entre usuarios.
+
+---
+
+## 44. Sin despliegue productivo incluido
+
+El proyecto está preparado principalmente para ejecución local.
+
+No incluye configuración específica para:
+
+* Docker.
+* Nginx.
+* HTTPS.
+* Dominio.
+* CI/CD.
+* Hosting.
+* Variables de entorno administradas.
+* Monitoreo.
+* Copias de seguridad.
+
+---
+
+## 45. Archivo ODS requerido para la carga inicial
+
+La carga inicial depende del archivo:
+
+```text
+backend/data/raw/datos_sinteticos.ods
+```
+
+Si el archivo no existe, el importador no podrá crear los datos de demostración.
+
+La aplicación puede continuar funcionando con una base ya creada, pero no podrá regenerar los datos iniciales sin el ODS.
+
+---
+
+## 46. Datos únicamente sintéticos
+
+La aplicación fue diseñada para datos ficticios.
+
+No debe utilizarse en producción con información real de pacientes sin implementar previamente:
+
+* Cifrado.
+* Auditoría.
+* Políticas de acceso.
+* Gestión de consentimiento.
+* Copias de seguridad.
+* Seguridad de infraestructura.
+* Cumplimiento de la normativa aplicable a datos personales y clínicos.
+
+---
+
+# Comandos útiles
+
+## 47. Reiniciar la base de datos
 
 Detener FastAPI.
 
-Eliminar:
-
-```text
-backend/data/clinic.db
-```
-
-En PowerShell:
+Desde la raíz del repositorio, eliminar:
 
 ```powershell
 Remove-Item backend\data\clinic.db
 ```
 
-Volver al backend:
+Entrar al backend:
 
 ```bash
 cd backend
 ```
 
-Ejecutar:
+Importar nuevamente:
 
 ```bash
 python -m scripts.import_ods
+```
+
+Iniciar FastAPI:
+
+```bash
 uvicorn app.main:app --reload
 ```
 
 ---
 
-## 24. Compilar el frontend
+## 48. Compilar el frontend
 
 Desde `frontend`:
 
@@ -695,13 +1049,13 @@ Desde `frontend`:
 npm run build
 ```
 
-La compilación se genera en:
+La compilación se generará en:
 
 ```text
 frontend/dist/
 ```
 
-Revisar localmente:
+Para revisar la compilación:
 
 ```bash
 npm run preview
@@ -709,17 +1063,17 @@ npm run preview
 
 ---
 
-## 25. Solución de problemas
+## 49. Solución de problemas frecuentes
 
-### El frontend no puede conectarse al backend
+### El frontend no se conecta
 
-Confirmar que FastAPI esté activo:
+Verificar que FastAPI esté disponible en:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-Confirmar en `frontend/.env`:
+Verificar `frontend/.env`:
 
 ```env
 VITE_API_URL=http://127.0.0.1:8000/api/v1
@@ -727,13 +1081,13 @@ VITE_API_URL=http://127.0.0.1:8000/api/v1
 
 ### Error CORS
 
-Confirmar en `backend/.env`:
+Verificar `backend/.env`:
 
 ```env
 CORS_ORIGINS=["http://localhost:5173"]
 ```
 
-Reiniciar FastAPI.
+Reiniciar FastAPI después de modificar el archivo.
 
 ### El login funciona, pero no aparecen datos
 
@@ -743,19 +1097,13 @@ Abrir:
 F12 → Network
 ```
 
-Verificar solicitudes a:
+Comprobar las solicitudes:
 
 ```text
 /api/v1/dashboard
 /api/v1/patients
 /api/v1/eps
 ```
-
-### Respuesta `401`
-
-El token pudo expirar.
-
-Cerrar sesión e ingresar nuevamente.
 
 ### La base de datos está vacía
 
@@ -765,95 +1113,29 @@ Ejecutar:
 python -m scripts.import_ods
 ```
 
-### El ODS no se encuentra
+### El token expiró
 
-Confirmar la ubicación:
+Cerrar sesión e iniciar nuevamente con las credenciales de demostración.
 
-```text
-backend/data/raw/datos_sinteticos.ods
-```
+### Vite utiliza otro puerto
 
-Y la variable:
+Agregar el nuevo origen en `backend/.env`.
+
+Ejemplo:
 
 ```env
-SEED_FILE=data/raw/datos_sinteticos.ods
+CORS_ORIGINS=["http://localhost:5173","http://localhost:5174"]
 ```
 
----
-
-## 26. Decisiones técnicas
-
-### Monolito modular
-
-Se escogió una arquitectura modular, pero sin separar el sistema en microservicios, debido al alcance reducido de la prueba.
-
-### SQLite
-
-SQLite es suficiente para:
-
-* 1.000 registros.
-* Ejecución local.
-* Instalación sencilla.
-* Entrega técnica rápida.
-
-La capa de SQLAlchemy permitiría migrar posteriormente a PostgreSQL.
-
-### Autenticación JWT
-
-JWT permite mantener el backend sin estado de sesión y simplifica la integración con React.
-
-### Session Storage
-
-Se utilizó `sessionStorage` para evitar conservar indefinidamente la sesión en el navegador.
-
-### Sin Redux
-
-El estado compartido es reducido y se limita principalmente a la autenticación. Context API es suficiente.
-
-### Sin Axios
-
-La Fetch API cubre las solicitudes necesarias y evita agregar otra dependencia.
-
-### Sin librería de componentes
-
-El diseño se implementó con CSS para reducir dependencias y demostrar construcción directa de la interfaz.
+Después reiniciar FastAPI.
 
 ---
 
-## 27. Alcance entregado
+# Protección de datos
 
-### Backend
+## 50. Consideración final
 
-* API REST.
-* Autenticación.
-* JWT.
-* Modelos de usuarios, EPS y pacientes.
-* Importación del ODS.
-* CRUD de pacientes.
-* Búsqueda.
-* Filtros.
-* Paginación.
-* Dashboard.
-* Documentación Swagger y ReDoc.
-
-### Frontend
-
-* Login.
-* Rutas protegidas.
-* Dashboard.
-* Listado de pacientes.
-* Búsqueda y filtros.
-* Formularios de creación y edición.
-* Cambio de prioridad y estado.
-* Eliminación con confirmación.
-* Mensajes de éxito y error.
-* Diseño adaptable.
-
----
-
-## 28. Protección de datos
-
-Todos los datos incluidos en el archivo suministrado son ficticios.
+Todos los registros entregados para la prueba son sintéticos.
 
 No deben incorporarse:
 
@@ -862,5 +1144,6 @@ No deben incorporarse:
 * Diagnósticos.
 * Información médica sensible.
 * Credenciales reales.
+* Documentos reales de identificación.
 
-La aplicación se desarrolló exclusivamente con fines demostrativos y de evaluación técnica.
+La solución tiene fines exclusivamente demostrativos y de evaluación técnica.
