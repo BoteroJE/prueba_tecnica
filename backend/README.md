@@ -1333,15 +1333,3 @@ El backend cubre las historias principales de:
 * Importación de datos sintéticos.
 
 ---
-
-## 32. Próximo paso
-
-El siguiente componente del proyecto es el frontend con React y Vite, que consumirá esta API para implementar:
-
-* Pantalla de inicio de sesión.
-* Dashboard.
-* Tabla paginada de pacientes.
-* Búsqueda y filtros.
-* Formulario de creación y edición.
-* Confirmación de eliminación.
-* Mensajes de éxito y error.
